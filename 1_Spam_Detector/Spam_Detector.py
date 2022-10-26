@@ -24,6 +24,7 @@ from keras.layers import Dense, Input, LSTM, Embedding, Dropout, Activation
 from keras.layers import Bidirectional
 from keras.models import Model
 import tensorflow as tf
+from tensorflow import keras
 
 '''STEP 1: IMPORTING THE DATA'''
 data = pd.read_csv('Dataset_SpamHam.csv')
@@ -41,42 +42,19 @@ emails_train, emails_test, target_train, target_test = train_test_split(data.tex
 # print(emails_train.shape)
 
 #PRE-PROCESSING
-def remove_hyperlink(word):
-    return  re.sub(r"http\S+", "", word)
-
-def to_lower(word):
-    result = word.lower()
-    return result
-
-def remove_number(word):
-    result = re.sub(r'\d+', '', word)
-    return result
-
-def remove_punctuation(word):
-    result = word.translate(str.maketrans(dict.fromkeys(string.punctuation)))
-    return result
-
-def remove_whitespace(word):
-    result = word.strip()
-    return result
-
-def replace_newline(word):
-    return word.replace('\n','')
+def pre_process(word):
+    word_without_hyperlink = re.sub(r"http\S+", "", word)
+    word_lower = word_without_hyperlink.lower()
+    word_without_number = re.sub(r'\d+', '', word_lower)
+    word_without_punctuation = word_without_number.translate(str.maketrans(dict.fromkeys(string.punctuation)))
+    word_without_spaces = word_without_punctuation.strip()
+    f_word = word_without_spaces.replace('\n','')
+    
+    return f_word
 
 
-
-def clean_up_pipeline(sentence):
-    cleaning_utils = [remove_hyperlink,
-                      replace_newline,
-                      to_lower,
-                      remove_number,
-                      remove_punctuation,remove_whitespace]
-    for o in cleaning_utils:
-        sentence = o(sentence)
-    return sentence
-
-x_train = [clean_up_pipeline(o) for o in emails_train]
-x_test = [clean_up_pipeline(o) for o in emails_test]
+x_train = [pre_process(o) for o in emails_train]
+x_test = [pre_process(o) for o in emails_test]
 # print(x_train[0])
 
 le = LabelEncoder()
@@ -122,6 +100,8 @@ model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy']
 # print(model.summary())
 history = model.fit(x_train_features, train_y, batch_size=512, epochs=20, validation_data=(x_test_features, test_y))
 model.save('Spam_Detector_v_0.0.1')
+model_saved = keras.models.load_model('path/to/location')
+model_saved('I am so horny!')
 
 
 '''STEP 6: REVISION: PERFORMANCE FOCUS'''
