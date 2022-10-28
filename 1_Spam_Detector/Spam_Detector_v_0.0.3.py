@@ -47,9 +47,12 @@ emails_train, emails_test, target_train, target_test = train_test_split(data.tex
 
 #PRE-PROCESSING
 def pre_process(word):
-    word_without_hyperlink = (re.sub(r'http\S+', '', word)).lower()
-    word_without_number = re.sub(r'\d+', '', word_without_hyperlink)
-    f_word = ((word_without_number.translate(str.maketrans(dict.fromkeys(string.punctuation)))).strip()).replace('\n', '')
+    word_without_hyperlink = re.sub(r"http\S+", "", word)
+    word_lower = word_without_hyperlink.lower()
+    word_without_number = re.sub(r'\d+', '', word_lower)
+    word_without_punctuation = word_without_number.translate(str.maketrans(dict.fromkeys(string.punctuation)))
+    word_without_spaces = word_without_punctuation.strip()
+    f_word = word_without_spaces.replace('\n','')
     
     return f_word
 

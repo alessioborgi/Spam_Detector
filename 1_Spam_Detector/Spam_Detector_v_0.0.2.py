@@ -25,10 +25,6 @@ from keras.layers import Bidirectional
 from keras.models import Model
 import tensorflow as tf
 from tensorflow import keras
-import matplotlib.pyplot as plt 
-from sklearn.metrics import confusion_matrix,f1_score, precision_score,recall_score
-import seaborn as sns
-
 
 '''STEP 1: IMPORTING THE DATA'''
 data = pd.read_csv('Dataset_SpamHam.csv')
@@ -46,16 +42,42 @@ emails_train, emails_test, target_train, target_test = train_test_split(data.tex
 # print(emails_train.shape)
 
 #PRE-PROCESSING
-def pre_process(word):
-    word_without_hyperlink = (re.sub(r'http\S+', '', word)).lower()
-    word_without_number = re.sub(r'\d+', '', word_without_hyperlink)
-    f_word = ((word_without_number.translate(str.maketrans(dict.fromkeys(string.punctuation)))).strip()).replace('\n', '')
-    
-    return f_word
+def remove_hyperlink(word):
+    return  re.sub(r"http\S+", "", word)
+
+def to_lower(word):
+    result = word.lower()
+    return result
+
+def remove_number(word):
+    result = re.sub(r'\d+', '', word)
+    return result
+
+def remove_punctuation(word):
+    result = word.translate(str.maketrans(dict.fromkeys(string.punctuation)))
+    return result
+
+def remove_whitespace(word):
+    result = word.strip()
+    return result
+
+def replace_newline(word):
+    return word.replace('\n','')
 
 
-x_train = [pre_process(o) for o in emails_train]
-x_test = [pre_process(o) for o in emails_test]
+
+def clean_up_pipeline(sentence):
+    cleaning_utils = [remove_hyperlink,
+                      replace_newline,
+                      to_lower,
+                      remove_number,
+                      remove_punctuation,remove_whitespace]
+    for o in cleaning_utils:
+        sentence = o(sentence)
+    return sentence
+
+x_train = [clean_up_pipeline(o) for o in emails_train]
+x_test = [clean_up_pipeline(o) for o in emails_test]
 # print(x_train[0])
 
 le = LabelEncoder()
@@ -106,28 +128,3 @@ model_saved('I am so horny!')
 
 
 '''STEP 6: REVISION: PERFORMANCE FOCUS'''
-plt.plot(history.history['accuracy'])
-plt.plot(history.history['val_accuracy'])
-plt.title('model accuracy')
-plt.ylabel('accuracy')
-plt.xlabel('epoch')
-plt.legend(['train', 'test'], loc='upper left')
-plt.grid()
-plt.show()
-
-y_predict  = [1 if o>0.5 else 0 for o in model.predict(x_test_features)]
-cf_matrix =confusion_matrix(test_y,y_predict)
-tn, fp, fn, tp = confusion_matrix(test_y,y_predict).ravel()
-
-ax= plt.subplot()
-sns.heatmap(cf_matrix, annot=True, ax = ax,cmap='Blues',fmt=''); #annot=True to annotate cells
-
-# labels, title and ticks
-ax.set_xlabel('Predicted labels')
-ax.set_ylabel('True labels'); 
-ax.set_title('Confusion Matrix')
-
-print("Precision: {:.2f}%".format(100 * precision_score(test_y, y_predict)))
-print("Recall: {:.2f}%".format(100 * recall_score(test_y, y_predict)))
-print("F1 Score: {:.2f}%".format(100 * f1_score(test_y,y_predict)))
-f1_score(test_y,y_predict)
