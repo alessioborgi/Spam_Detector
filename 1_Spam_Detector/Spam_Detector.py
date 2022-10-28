@@ -104,13 +104,6 @@ model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy']
 # print(model.summary())
 description = model.fit(x_train_features, train_label, batch_size=512, epochs=20, validation_data=(x_test_features, test_label))
 model.save('Spam_Detector_v_0.0.1')
-model_saved = keras.models.load_model('path/to/location')
-
-email_spam_ham = 'I am so horny!'
-result_prediction = model_saved.predict(email_spam_ham)
-result_prediction_string = 'Spam' if result_prediction == 1 else 'Ham' 
-print(f'The result for the {email_spam_ham} is: {result_prediction}. Thus it is classified as: {result_prediction_string}')
-
 
 ''' #######       3° PART: PERFORMANCE REVISION       #######'''
 
@@ -140,3 +133,14 @@ print("Precision: {:.2f}%".format(100 * precision_score(test_label, y_predict)))
 print("Recall: {:.2f}%".format(100 * recall_score(test_label, y_predict)))
 print("F1 Score: {:.2f}%".format(100 * f1_score(test_label,y_predict)))
 f1_score(test_label,y_predict)
+
+''' #######       4° PART: NEW DATA       #######'''
+
+'''STEP 7: TESTING NEW EMAILS'''
+
+model_saved = keras.models.load_model('path/to/location')
+
+email_spam_ham = 'I am so horny!'
+result_prediction = model_saved.predict(email_spam_ham)
+result_prediction_string = 'Spam' if result_prediction == 1 else 'Ham' 
+print(f'The result for the {email_spam_ham} is: {result_prediction}. Thus it is classified as: {result_prediction_string}')
