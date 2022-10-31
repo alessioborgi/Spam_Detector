@@ -21,7 +21,8 @@ import string                                                           #Library
 import numpy as np                                                      #Library that will be used for manipulation.
 from sklearn.model_selection import train_test_split                    #Library that will be used in the Splitting-Step for doing the Train-Test Split.
 from sklearn.feature_extraction.text import ENGLISH_STOP_WORDS          #Library that will be used for deleting stop words from the email in the Pre-processing step.
-from sklearn.preprocessing import LabelEncoder                          #Library that will be used for creating a Label Encoder due to the necessity of providing numbers to the model as targets.
+from sklearn.preprocessing import LabelEncoder                          #Library that will be used for creating a Label Encoder due to the necessity of providing numbers 
+                                                                        #to the model as targets.
 from keras.models import save_model                                     #Library that will be used for saving the Model once it is trained. 
 from keras.preprocessing.text import Tokenizer                          #Library that will be used to Tokenize the emails.
 from keras_preprocessing.sequence import pad_sequences                  #Library that will be used for the Padding of the Tokens.
@@ -31,8 +32,8 @@ from keras.models import Model                                          #Library
 import tensorflow as tf                                                 #Library that will be used for making neural nets.
 from tensorflow import keras                                            #Library that will be used, more specific, for making neural nets.
 import matplotlib.pyplot as plt                                         #Library that will be used for making some graphs.
-from sklearn.metrics import confusion_matrix,f1_score                   #Library that will be use for making some statistics and computations on the final result (post-processing).
-from sklearn.metrics import precision_score,recall_score                #Library that will be use for making some statistics and computations on the final result (post-processing).
+from sklearn.metrics import confusion_matrix,f1_score                   #Library that will be use for making some statistics and computations on the result (post-processing).
+from sklearn.metrics import precision_score,recall_score                #Library that will be use for making some statistics and computations on the result (post-processing).
 import seaborn as sns                                                   #Library that will be used for making some graphs.
 
 ''' #######       1° PART: FROM IMPORTING DATA TO PADDING IT       #######'''
@@ -104,7 +105,8 @@ test_label = label_encoder.transform(target_test.values)                    #Enc
 '''
 
 #TOKENIZING:
-max_meaningful_words = 70000                                                #I set how many meaningful words I want to keep into account, (i.e the number of rows in the Embedding Vector).
+max_meaningful_words = 70000                                                #I set how many meaningful words I want to keep into account, (i.e the number of rows in the 
+                                                                            #Embedding Vector).
 tokenizer = Tokenizer(num_words = max_meaningful_words)                     #Creation of the Tokenizer object with the maximum number of words to keep into account set.
 tokenizer.fit_on_texts(x_train)                                             #Applying the tokenization to the Training Data.
 x_train_features = np.array(tokenizer.texts_to_sequences(x_train))          #Transforming the Training data into an array.
@@ -151,10 +153,11 @@ model.add(Bidirectional(tf.keras.layers.LSTM(64)))                          #Add
 
 # model.add(Dense(16, activation='relu'))                                   #We can set the activation function of the Model to be the RELU.
 model.add(Dense(16, activation='selu'))                                     #We can set the activation function of the Model to be the SELU.
-model.add(Dropout(0.1))                                                     #Adding some Dropout, that allows to Regularize the Neural Network by dropping temporarily some nodes from the neural net at each epoch.
+model.add(Dropout(0.1))                                                     #Adding some Dropout, that allows to Regularize the Neural Network by dropping temporarily some 
+                                                                            #nodes from the neural net at each epoch.
 model.add(Dense(1, activation='sigmoid'))                                   #Adding the Sigmoid Activation Function to normalize the output, and thus see them as probabilities.
-model.compile(loss='binary_crossentropy', optimizer='adam',                 #Setting the loss (LOG-LOSS or Binary-Cross entropy). I set the Optimizer to be the Adam one, since it is the best one (instead of using GD or others).
-              metrics=['accuracy'])       
+model.compile(loss='binary_crossentropy', optimizer='adam',                 #Setting the loss (LOG-LOSS or Binary-Cross entropy). I set the Optimizer to be the Adam one, 
+               metrics=['accuracy'])                                        #since it is the best one (instead of using GD or others).
 # print(model.summary())                                                    #Printing the Neural Network Summary.
 description = model.fit(x_train_features, train_label, batch_size = 512,    #Setting teh Description of the Neural Network, indicating batch size, number of epochs.
                         epochs = 20, validation_data = 
@@ -165,34 +168,48 @@ model.save('drive/Models/Spam_Detector_v_0.0.2')                            #Sav
 '''
     In this step, I will focus on some performances measurments. Indeed, as Post-processing step, I need to know whether the Model I have built
     is effective or not. 
-    I will make use of the Accuracy, but also of other very important metrics, such as the Precision, the Recall and the F1 Score.
 '''
 
 '''STEP 6: REVISION: PERFORMANCE FOCUS'''
-plt.plot(description.history['accuracy'])
-plt.plot(description.history['val_accuracy'])
-plt.title('Model Accuracy')
-plt.ylabel('Accuracy Value')
-plt.xlabel('Epoch Number')
-plt.legend(['train', 'test'], loc='upper left')
-plt.grid()
-plt.show()
+'''
+    I will make use of the Accuracy, but also of other very important metrics, such as the Precision, the Recall and the F1 Score.
+    While the Accuracy says to me effectively what is the percentage of guessing the right value for the Email (Spam VS Ham), I have the Precision
+    to indicating the fraction of relevant nstances from all the relevant instances. Instead, the Recall, helps out to understand how complete the 
+    results are.
+    At the end, I have the F1 Score (that in practice is the harmonic mean of precision and recall).
+'''
 
-y_predict  = [1 if o > 0.5 else 0 for o in model.predict(x_test_features)]
-cf_matrix =confusion_matrix(test_label,y_predict)
-tn, fp, fn, tp = confusion_matrix(test_label,y_predict).ravel()
+#ACCURACY VS EPOCHS:
+plt.title('Model Accuracy')                                                 #Setting the Title of the Plot.
+plt.ylabel('Accuracy Value')                                                #Setting the y label for the Plot.
+plt.xlabel('Epoch Number')                                                  #Setting the x label for the Plot.
+plt.legend(['train', 'test'], loc='upper left')                             #Setting the Legend to be in the upper left part of the plot.
+plt.plot(description.history['accuracy'])                                   #Printing out the Training Data Accuracy.
+plt.plot(description.history['val_accuracy'])                               #Printing out the Test Data Accuracy.
+plt.grid()                                                                  #Adding a grid to the plot.
+plt.show()                                                                  #Showing the plot.
 
-ax= plt.subplot()
-sns.heatmap(cf_matrix, annot=True, ax = ax,cmap='Blues',fmt=''); #annot=True to annotate cells
+#PREDICTING THE LABELS:
+y_predict  = [1 if o > 0.5 else 0 for o in model.predict(x_test_features)]  #Predicting the labels for the test data.
 
-# labels, title and ticks
-ax.set_xlabel('Predicted labels')
-ax.set_ylabel('True labels'); 
-ax.set_title('Confusion Matrix')
+#COMPUTING THE CONFUSION MATRIX:
+conf_matrix = confusion_matrix(test_label,y_predict)                        #Computing the Confusion Matrix for the same data.
 
-print("Precision: {:.2f}%".format(100 * precision_score(test_label, y_predict)))
-print("Recall: {:.2f}%".format(100 * recall_score(test_label, y_predict)))
-print("F1 Score: {:.2f}%".format(100 * f1_score(test_label,y_predict)))
+#GETTING ALL THE VALUES FROM CONFUSION MATRIX:  
+#tn, fp, fn, tp = confusion_matrix(test_label,y_predict).ravel()             #Splitting the Confusion Matrix for seeing what are all the values( True Negative, Fase Positive, False Negative, True Positive).
+
+#PLOTTING THE CONFUSION MATRIX:
+ax= plt.subplot()                                                           #Creation of a subplot.
+ax.set_title('Confusion Matrix')                                            #Setting the title.
+ax.set_xlabel('Predicted labels')                                           #Setting the x label.
+ax.set_ylabel('True labels')                                                #Setting the y label.
+sns.heatmap(conf_matrix, annot = True, ax = ax,cmap='Blues',fmt='');        #Plotting out the Confusion Matrix.
+
+#COMPUTING PRECISION, RECALL AND F1 SCORE
+print("Precision: {:.5f}%".format(100 *                                     #Computing the Precision Score.
+                                  precision_score(test_label, y_predict)))  
+print("Recall: {:.5f}%".format(100 * recall_score(test_label, y_predict)))  #Computing the Recall Score.
+print("F1 Score: {:.5f}%".format(100 * f1_score(test_label,y_predict)))     #Computing the F1 Score.
 f1_score(test_label,y_predict)
 
 '''' #######       4° PART: NEW DATA       #######'''
