@@ -215,27 +215,58 @@ f1_score(test_label,y_predict)
 '''' #######       4° PART: NEW DATA       #######'''
 
 '''STEP 7: TESTING NEW EMAILS'''
+'''
+    In this last part of the Project, I am going to try to see on a real world email, whether it correctly classifies or not
+    an email received. 
+'''
 
-model_saved = keras.models.load_model('/content/drive/MyDrive/Colab/Models/Spam_Detector_v_0.0.1', compile = True)
+#LOADING THE MODEL:
+model_saved = keras.models.load_model('/content/drive/MyDrive/Colab/ \
+                                      Models/Spam_Detector_v_0.0.1', 
+                                      compile = True)
 
-email_spam_ham = ['XXXMobileMovieClub: To use your credit, click the WAP link in the next txt message or click here>> http://wap. xxxmobilemovieclub.com?n=QJKGIGHJJGCBL']
-email_processed = [pre_process(o) for o in email_spam_ham]
+#EMAIL TO BE TESTED:
+email_spam_ham = ['XXXMobileMovieClub: To use your credit, click the \
+    WAP link in the next txt message or click here>> \
+    http://wap. xxxmobilemovieclub.com?n=QJKGIGHJJGCBL. Please call our \
+    customer service representative on 0800 169 6031 between 10am-9pm as \
+    you have WON a guaranteed £1000 cash or £5000 prize! Last weekends \
+    draw shows that you won a £1000 prize GUARANTEED. Last Chance! Claim \
+    ur £150 worth of discount vouchers today! Free entry in 2 a weekly \
+    comp for a chance to win an ipod.']                                     #Actual Email to be tested.
+
+#PRE-PROCESSING STEP APPLICATION:
+email_processed = [pre_process(o) for o in email_spam_ham]                  #Applying the pre-processing step to the email received in input to be tested.
 # email_processed = pre_process(email_spam_ham) 
 print(email_processed)
-tokenizer.fit_on_texts(email_processed)
-email_spam_ham_features = tokenizer.texts_to_sequences(email_processed)
+
+#TOKENIZATION STEP APPLICATION:
+tokenizer.fit_on_texts(email_processed)                                     #Applying the tokenization to the Training Data.
+email_spam_ham_features = tokenizer.texts_to_sequences(email_processed)     #Transforming the Training data into an array.
+
 l = []
 for o in email_spam_ham_features:
   for i in o:
     l.append(i)
 email_spam_ham_features = np.array(l)
 print(email_spam_ham_features)
-email_spam_ham_features=email_spam_ham_features.reshape(1,email_spam_ham_features.shape[0])
+email_spam_ham_features=email_spam_ham_features.reshape(1,                  
+                        email_spam_ham_features.shape[0])
 
-email_to_test = pad_sequences(email_spam_ham_features,maxlen=max_padding)
-result_prediction = model_saved.predict(email_to_test)
+#PADDING STEP APPLICATION:
+#TO DO: PADDING HERE MUST BE EQUAL TO THE PADDING OF THE TRAINING AND TEST DATA: SEARCH HOW TO SAVE THIS LENGTH
+email_to_test = pad_sequences(email_spam_ham_features,maxlen=max_padding)   #Adding the needed padding to the email, in such a way to have an equal length sample to test.
+
+#ACTUAL PREDICTION:
+result_prediction = model_saved.predict(email_to_test)                      #Actual prediction.
 print(result_prediction)
 
-y_prediction  = [1 if o > 0.5 else 0 for o in result_prediction]
-result_prediction_string = 'Spam' if y_prediction == 1 else 'Ham' 
-print(f'The result for the {email_spam_ham} is: {result_prediction}. Thus it is classified as: {result_prediction_string}')
+#TRANSFORMATION IN 0-1: 
+y_prediction  = [1 if o > 0.5 else 0 for o in result_prediction]            #Transforming the prediction in 0 or 1 label.
+
+#STRING TRANSFORMATION IN HAM-SPAM:
+result_prediction_string = 'Spam' if y_prediction == 1 else 'Ham'           #Transforming the prediction in Ham or Spam label.
+
+#PRINTING THE FINAL PREDICTION:
+print(f'The result for the {email_spam_ham} is: {result_prediction}. \
+    Thus it is classified as: {result_prediction_string}')                  #Printing out the actual result.
