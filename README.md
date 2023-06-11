@@ -1,6 +1,6 @@
 # Spam_Detector
 
-**Copyright © 2022 Alessio Borgi**
+**Copyright © 2023 Alessio Borgi**
 
 **PROJECT SCOPE**: Development of a Spam Detection System classifying Spam/Ham Emails.
 
